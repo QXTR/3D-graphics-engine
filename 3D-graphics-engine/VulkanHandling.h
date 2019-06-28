@@ -1,49 +1,56 @@
 #pragma once
-#include <iostream>
 #include <vector>
 #include "vulkan/vulkan.h"
+#include "GraphicsEngineUtil.hpp"
+#include "VulkanHandlingDebug.hpp"
 
 namespace graphicsEngine {
 	namespace vulkanHandling {
-		static bool debugFlag;
 		static VkResult result;
+		static InitInfo initInfo;
+
+		static VkInstance instance;
+		static VkSurfaceKHR surface;
+		static std::vector<VkPhysicalDevice> physicalDevices;
+		static VkDevice device;
+		static VkQueue queue;
 
 		static VkApplicationInfo applicationInfo;
 		static VkInstanceCreateInfo instanceInfo;
-		static VkInstance instance;
-
-		static uint32_t physicalDeviceCount = 0;
-		static std::vector<VkPhysicalDevice> physicalDevices;
 		static VkDeviceQueueCreateInfo deviceQueueInfo;
 		static VkDeviceCreateInfo deviceInfo;
-		static VkDevice device;
+
+
+		static std::vector<std::vector<VkQueueFamilyProperties>> queueFamilyProperties;
+		static int deviceQueueFamilyIndex = 0;
+		static std::vector<float> queuePriorities = { 1.0f };
 
 		static uint32_t instanceLayerCount = 0;
-		static std::vector<VkLayerProperties> instanceLayers;
+		static std::vector<VkLayerProperties> instanceLayers = {};
+		static std::vector<const char*> usedInstanceLayers = {};
 
-		void startVulkan(bool debugFlagInput); 
+		static uint32_t instanceExtensionCount = 0;
+		static std::vector<VkExtensionProperties> instanceExtensions = {};
+		static std::vector<const char*> usedInstanceExtensions = {};
 
-		static void createApplicationInfo();
-		static void createInstanceInfo();
-		static void createInstance();
+		static const VkPhysicalDeviceFeatures usedFeatures = {};
 
-		static void createPhysicalDevices();
-		static void createDeviceQueueCreateInfo();
-		static void createDeviceCreateInfo();
-		static void createDevice();
+		void start(InitInfo);
+		void shutdown();
 
-		static void chooseInstanceLayers();
+		void createInstance();
+		void createPhysicalDevices();
+		void createDevice();
+		void createQueue();
+		//void createSwapchain();
 
+		void createApplicationInfo();
+		void createInstanceInfo();
 
-		namespace debug {
-			static void printProperties();
-			static void printProperties(uint32_t, const char[]);
-			static void printProperties(VkPhysicalDevice&);
-			static void printProperties(VkPhysicalDevice*, uint32_t);
-			static void printProperties(VkQueueFamilyProperties&);
-			static void printProperties(VkQueueFamilyProperties*, uint32_t);
-			static void printProperties(VkLayerProperties&);
-			static void printProperties(VkLayerProperties*, uint32_t);
-		}
+		void createDeviceQueueCreateInfo();
+		void createDeviceCreateInfo();
+
+		void chooseInstanceLayers();
+		void chooseInstanceExtensions();
 	}
 }

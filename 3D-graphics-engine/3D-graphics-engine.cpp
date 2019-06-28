@@ -1,11 +1,15 @@
 #include <iostream>
-#include "vulkan/vulkan.h"
-#include "VulkanHandling.h"
+#include "GraphicsEngine.hpp"
 
-namespace vh = graphicsEngine::vulkanHandling;
+namespace ge = graphicsEngine;
+namespace gh = ge::glfwHandling;
+namespace vh = ge::vulkanHandling;
+namespace vhd = vh::debug;
 
 int main()
 {
-	vh::startVulkan(true); 
+	ge::start();
+	ge::loop();
+	ge::shutdown();
 	return 0;
 }

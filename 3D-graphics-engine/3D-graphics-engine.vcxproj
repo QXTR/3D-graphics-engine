@@ -91,13 +91,13 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\VulkanSDK\1.1.108.0\Include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\VulkanSDK\1.1.108.0\Include;C:\glfw-3.3.bin.WIN32\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\VulkanSDK\1.1.108.0\Lib32</AdditionalLibraryDirectories>
-      <AdditionalDependencies>vulkan-1.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\VulkanSDK\1.1.108.0\Lib32;C:\glfw-3.3.bin.WIN32\lib-vc2019</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glfw3.lib;vulkan-1.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -155,10 +155,17 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="3D-graphics-engine.cpp" />
+    <ClCompile Include="GLFWHandling.cpp" />
+    <ClCompile Include="GraphicsEngine.cpp" />
     <ClCompile Include="VulkanHandling.cpp" />
+    <ClCompile Include="VulkanHandlingDebug.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="VulkanHandling.h" />
+    <ClInclude Include="GLFWHandling.hpp" />
+    <ClInclude Include="GraphicsEngine.hpp" />
+    <ClInclude Include="GraphicsEngineUtil.hpp" />
+    <ClInclude Include="VulkanHandling.hpp" />
+    <ClInclude Include="VulkanHandlingDebug.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

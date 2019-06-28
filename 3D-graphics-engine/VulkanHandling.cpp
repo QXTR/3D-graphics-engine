@@ -1,22 +1,76 @@
-#include <iostream>
-#include <vector>
-#include "vulkan/vulkan.h"
-#include "VulkanHandling.h"
+#include "VulkanHandling.hpp"
 
-#define ASSERT_VULKAN(val)\
-		if(val != VK_SUCCESS){\
-			__debugbreak();\
-		}
 
 namespace graphicsEngine {
 	namespace vulkanHandling {
-
-		void startVulkan(bool debugFlagInput) {
-			debugFlag = debugFlagInput;
-			if (debugFlag)
-				debug::printProperties();
-			createInstance();
+		void start(InitInfo initInfo) {
+			usedDebugStartupFlags = initInfo.usedDebugStartupFlags;
+			window = initInfo.window;
+			if (usedDebugStartupFlags & debug::STARTUP_ACTIVE_BIT) {
+				debug::printProperties(usedDebugStartupFlags);
+			}
+			createInstance(initInfo.glfwExtensions);
+			initInfo.createSurface(&instance, &window, &surface);
 			createPhysicalDevices();
+			createDevice();
+			createQueue();
+			createSwapchain();
+		}
+
+		void shutdown() {
+			vkDeviceWaitIdle(device);
+			vkDestroyDevice(device, nullptr);
+			vkDestroySurfaceKHR(instance, surface, nullptr);
+			vkDestroyInstance(instance, nullptr);
+		}
+
+		void createInstance(std::function<std::vector<const char*>()> func) {
+			createApplicationInfo();
+			chooseInstanceLayers();
+			chooseInstanceExtensions(func);
+			createInstanceInfo();
+			result = vkCreateInstance(&instanceInfo, nullptr, &instance);
+			ASSERT_VULKAN(result);
+		}
+
+		/*void createSurface() {
+			auto window = gh::window;
+			result = glfwCreateWindowSurface(instance, window, nullptr, &surface);
+			ASSERT_VULKAN(result);
+		}*/
+
+		void createPhysicalDevices() {
+			uint32_t physicalDeviceCount = 0;
+			result = vkEnumeratePhysicalDevices(instance, &physicalDeviceCount, nullptr);
+			ASSERT_VULKAN(result);
+
+			physicalDevices.resize(physicalDeviceCount);
+
+			result = vkEnumeratePhysicalDevices(instance, &physicalDeviceCount, physicalDevices.data());
+			ASSERT_VULKAN(result);
+
+			if (usedDebugStartupFlags & debug::STARTUP_ACTIVE_BIT) {
+				if (usedDebugStartupFlags & debug::STARTUP_PHYSICAL_DEVICES_BIT) {
+					debug::printProperties(physicalDeviceCount, "physicalDeviceCount");
+					debug::printProperties(physicalDevices.data(), physicalDeviceCount);
+				}
+			}
+		}
+
+		void createDevice() {
+			createDeviceQueueCreateInfo();
+			createDeviceCreateInfo();
+			result = vkCreateDevice(physicalDevices[0], &deviceInfo, nullptr, &device); //TODO civ
+			ASSERT_VULKAN(result);
+		}
+
+		void createQueue() {
+			vkGetDeviceQueue(device, deviceQueueFamilyIndex, 0, &queue);
+		}
+
+		void createSwapchain() {
+			VkSurfaceCapabilitiesKHR surfaceCapabilities;
+			vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevices[0], surface, &surfaceCapabilities);
 		}
 
 		void createApplicationInfo() {
@@ -34,46 +88,36 @@ namespace graphicsEngine {
 			instanceInfo.pNext = nullptr;
 			instanceInfo.flags = NULL;
 			instanceInfo.pApplicationInfo = &applicationInfo;
-			instanceInfo.enabledLayerCount = NULL;
-			instanceInfo.ppEnabledLayerNames = nullptr;
-			instanceInfo.enabledExtensionCount = NULL;
-			instanceInfo.ppEnabledExtensionNames = nullptr;
-		}
-
-		void createInstance() {
-			createApplicationInfo();
-			chooseInstanceLayers();
-			createInstanceInfo();
-			result = vkCreateInstance(&instanceInfo, NULL, &instance);
-			ASSERT_VULKAN(result);
-		}
-
-		void createPhysicalDevices() {
-			result = vkEnumeratePhysicalDevices(instance, &physicalDeviceCount, nullptr);
-			ASSERT_VULKAN(result);
-			if (debugFlag)
-				debug::printProperties(physicalDeviceCount, "physicalDeviceCount");
-
-			physicalDevices.resize(physicalDeviceCount);
-
-			result = vkEnumeratePhysicalDevices(instance, &physicalDeviceCount, physicalDevices.data());
-			ASSERT_VULKAN(result);
-			if (debugFlag)
-				debug::printProperties(physicalDevices.data(), physicalDeviceCount);
+			instanceInfo.enabledLayerCount = usedInstanceLayers.size();
+			instanceInfo.ppEnabledLayerNames = usedInstanceLayers.data();
+			instanceInfo.enabledExtensionCount = usedInstanceExtensions.size();
+			instanceInfo.ppEnabledExtensionNames = usedInstanceExtensions.data();
 		}
 
 		void createDeviceQueueCreateInfo() {
+			std::vector<uint32_t> queueFamilyCounts;
+
+			for (unsigned int i = 0; i < physicalDevices.size(); i++) {
+				uint32_t dataI = 0;
+				std::vector<VkQueueFamilyProperties> dataV;
+				vkGetPhysicalDeviceQueueFamilyProperties(physicalDevices[i], &dataI, nullptr);
+				dataV.resize(dataI);
+				vkGetPhysicalDeviceQueueFamilyProperties(physicalDevices[i], &dataI, dataV.data());
+				queueFamilyCounts.push_back(dataI);
+				queueFamilyProperties.push_back(dataV);
+			}
+
+			vkGetPhysicalDeviceQueueFamilyProperties(physicalDevices[0], &queueFamilyCounts[0], queueFamilyProperties[0].data());
+
 			deviceQueueInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
 			deviceQueueInfo.pNext = nullptr;
 			deviceQueueInfo.flags = NULL;
-			deviceQueueInfo.queueFamilyIndex = 0;								//TODO civ
+			deviceQueueInfo.queueFamilyIndex = deviceQueueFamilyIndex;			//TODO civ
 			deviceQueueInfo.queueCount = 1;										//TODO civ
-			deviceQueueInfo.pQueuePriorities = NULL;
+			deviceQueueInfo.pQueuePriorities = queuePriorities.data();
 		}
 
 		void createDeviceCreateInfo() {
-			VkPhysicalDeviceFeatures usedFeatures = {};
-
 			deviceInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 			deviceInfo.pNext = nullptr;
 			deviceInfo.flags = NULL;
@@ -86,105 +130,41 @@ namespace graphicsEngine {
 			deviceInfo.pEnabledFeatures = &usedFeatures;
 		}
 
-		void createDevice() {
-			result = vkCreateDevice(physicalDevices[0], &deviceInfo, nullptr, &device); //TODO civ
-			ASSERT_VULKAN(result);
-		}
-
 		void chooseInstanceLayers() {
-			result = vkEnumerateInstanceLayerProperties(&instanceLayerCount, NULL);
+			result = vkEnumerateInstanceLayerProperties(&instanceLayerCount, nullptr);
 			ASSERT_VULKAN(result);
-			if (debugFlag)
-				debug::printProperties(instanceLayerCount, "instanceLayerCount");
 
 			instanceLayers.resize(instanceLayerCount);
 
 			result = vkEnumerateInstanceLayerProperties(&instanceLayerCount, instanceLayers.data());
 			ASSERT_VULKAN(result);
-			if (debugFlag)
-				debug::printProperties(instanceLayers.data(), instanceLayerCount);
+
+			if (usedDebugStartupFlags & debug::STARTUP_ACTIVE_BIT) {
+				if (usedDebugStartupFlags & debug::STARTUP_INSTANCE_LAYERS_BIT) {
+					debug::printProperties(instanceLayerCount, "instanceLayerCount");
+					debug::printProperties(instanceLayers.data(), instanceLayerCount);
+				}
+			}
+
+			usedInstanceLayers.push_back("VK_LAYER_LUNARG_standard_validation");
 		}
 
-		namespace debug {
-			static void printProperties() {
-				std::cout << "No input\n" << std::endl;
-			}
+		void chooseInstanceExtensions(std::function<std::vector<const char*>()> glfwExtensions) {
+			result = vkEnumerateInstanceExtensionProperties(nullptr, &instanceExtensionCount, nullptr);
+			ASSERT_VULKAN(result);
 
-			static void printProperties(uint32_t input, const char name[]) {
-				std::cout << name << ": " << input << "\n" << std::endl;
-			}
+			instanceExtensions.resize(instanceLayerCount);
 
-			static void printProperties(VkPhysicalDevice& input) {
-				VkPhysicalDeviceProperties properties;
-				vkGetPhysicalDeviceProperties(input, &properties);
-				std::cout << "deviceName:              " << properties.deviceName << std::endl;
-				std::cout << "apiVersion:              " << VK_VERSION_MAJOR(properties.apiVersion) << "." << VK_VERSION_MINOR(properties.apiVersion) << "." << VK_VERSION_PATCH(properties.apiVersion) << std::endl;
-				std::cout << "driverVersion:           " << properties.driverVersion << std::endl;
-				std::cout << "vendorID:                " << properties.vendorID << std::endl;
-				std::cout << "deviceID:                " << properties.deviceID << std::endl;
-				std::cout << "deviceType:              " << properties.deviceType << std::endl;
-				std::cout << "discreteQueuePriorities: " << properties.limits.discreteQueuePriorities << std::endl;
+			result = vkEnumerateInstanceExtensionProperties(nullptr, &instanceExtensionCount, instanceExtensions.data());
+			ASSERT_VULKAN(result);
 
-				VkPhysicalDeviceFeatures features;
-				vkGetPhysicalDeviceFeatures(input, &features);
-				std::cout << "geometryShader: " << features.geometryShader << std::endl;
+			std::vector<const char*> temp = glfwExtensions();
+			usedInstanceExtensions.swap(temp);
 
-				VkPhysicalDeviceMemoryProperties memorieProperties;
-				vkGetPhysicalDeviceMemoryProperties(input, &memorieProperties);
-
-				std::cout << std::endl;
-
-				uint32_t queueFamilyCount = 0;
-				vkGetPhysicalDeviceQueueFamilyProperties(input, &queueFamilyCount, nullptr);
-				printProperties(queueFamilyCount, "queueFamilyCount");
-
-				std::vector<VkQueueFamilyProperties> queueFamilyProperties;
-				queueFamilyProperties.resize(queueFamilyCount);
-				vkGetPhysicalDeviceQueueFamilyProperties(input, &queueFamilyCount, queueFamilyProperties.data());
-				printProperties(queueFamilyProperties.data(), queueFamilyCount);
-
-				std::cout << std::endl;
-			}
-
-			static void printProperties(VkPhysicalDevice* input, uint32_t size) {
-				for (unsigned int i = 0; i < size; i++)
-				{
-					std::cout << "physicalDevice " << i << " : " << std::endl;
-					printProperties(input[i]);
-				}
-			}
-
-			void printProperties(VkQueueFamilyProperties& input) {
-				std::cout << "VK_QUEUE_GRAPHICS_BIT:       " << ((input.queueFlags & VK_QUEUE_GRAPHICS_BIT)) << std::endl;
-				std::cout << "VK_QUEUE_COMPUTE_BIT:        " << ((input.queueFlags & VK_QUEUE_COMPUTE_BIT)) << std::endl;
-				std::cout << "VK_QUEUE_TRANSFER_BIT:       " << ((input.queueFlags & VK_QUEUE_TRANSFER_BIT)) << std::endl;
-				std::cout << "VK_QUEUE_SPARSE_BINDING_BIT: " << ((input.queueFlags & VK_QUEUE_SPARSE_BINDING_BIT)) << std::endl;
-				std::cout << "queueCount:                  " << input.queueCount << std::endl;
-				std::cout << "timestampValidBits:          " << input.timestampValidBits << std::endl;
-				std::cout << "minImageTransferGranularity: " << input.minImageTransferGranularity.width << "," << input.minImageTransferGranularity.height << "," << input.minImageTransferGranularity.depth << std::endl;
-				std::cout << std::endl;
-			}
-
-			void printProperties(VkQueueFamilyProperties* input, uint32_t size) {
-				for (unsigned int i = 0; i < size; i++)
-				{
-					std::cout << "queueFamily " << i << " : " << std::endl;
-					printProperties(input[i]);
-				}
-			}
-
-			void printProperties(VkLayerProperties& input) {
-				std::cout << "layerName:             " << input.layerName << std::endl;
-				std::cout << "description:           " << input.description << std::endl;
-				std::cout << "specVersion:           " << input.specVersion << std::endl;
-				std::cout << "implementationVersion: " << input.implementationVersion << std::endl;
-			}
-
-			void printProperties(VkLayerProperties* input, uint32_t size) {
-				for (unsigned int i = 0; i < size; i++)
-				{
-					std::cout << "layer " << i << " : " << std::endl;
-					printProperties(input[i]);
+			if (usedDebugStartupFlags & debug::STARTUP_ACTIVE_BIT) {
+				if (usedDebugStartupFlags & debug::STARTUP_INSTANCE_EXTENSIONS_BIT) {
+					debug::printProperties(instanceExtensionCount, "instanceExtensionCount");
+					debug::printProperties(instanceExtensions.data(), instanceExtensionCount);
 				}
 			}
 		}
