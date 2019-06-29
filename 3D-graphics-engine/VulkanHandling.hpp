@@ -26,11 +26,9 @@ namespace graphicsEngine {
 		static int deviceQueueFamilyIndex = 0;
 		static std::vector<float> queuePriorities = { 1.0f };
 
-		static uint32_t instanceLayerCount = 0;
 		static std::vector<VkLayerProperties> instanceLayers = {};
 		static std::vector<const char*> usedInstanceLayers = {};
 
-		static uint32_t instanceExtensionCount = 0;
 		static std::vector<VkExtensionProperties> instanceExtensions = {};
 		static std::vector<const char*> usedInstanceExtensions = {};
 

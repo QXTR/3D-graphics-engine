@@ -10,11 +10,14 @@ namespace graphicsEngine {
 				debug::printProperties(usedDebugStartupFlags);
 			}
 			createInstance(initInfo.glfwExtensions);
+			if (usedDebugStartupFlags & debug::STARTUP_ACTIVE_BIT) {
+				debug::createDebugMessenger();
+			}
 			initInfo.createSurface(&instance, &window, &surface);
 			createPhysicalDevices();
 			createDevice();
 			createQueue();
-			createSwapchain();
+			//createSwapchain();
 		}
 
 		void shutdown() {
@@ -70,7 +73,13 @@ namespace graphicsEngine {
 
 		void createSwapchain() {
 			VkSurfaceCapabilitiesKHR surfaceCapabilities;
-			vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevices[0], surface, &surfaceCapabilities);
+			result = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevices[0], surface, &surfaceCapabilities);
+			ASSERT_VULKAN(result);
+			if (usedDebugStartupFlags & debug::STARTUP_ACTIVE_BIT) {
+				if (usedDebugStartupFlags & debug::STARTUP_PHYSICAL_DEVICES_BIT) {
+					debug::printProperties(&surfaceCapabilities);
+				}
+			}
 		}
 
 		void createApplicationInfo() {
@@ -97,12 +106,12 @@ namespace graphicsEngine {
 		void createDeviceQueueCreateInfo() {
 			std::vector<uint32_t> queueFamilyCounts;
 
-			for (unsigned int i = 0; i < physicalDevices.size(); i++) {
+			for(auto physicalDevice : physicalDevices) {
 				uint32_t dataI = 0;
 				std::vector<VkQueueFamilyProperties> dataV;
-				vkGetPhysicalDeviceQueueFamilyProperties(physicalDevices[i], &dataI, nullptr);
+				vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &dataI, nullptr);
 				dataV.resize(dataI);
-				vkGetPhysicalDeviceQueueFamilyProperties(physicalDevices[i], &dataI, dataV.data());
+				vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &dataI, dataV.data());
 				queueFamilyCounts.push_back(dataI);
 				queueFamilyProperties.push_back(dataV);
 			}
@@ -131,6 +140,7 @@ namespace graphicsEngine {
 		}
 
 		void chooseInstanceLayers() {
+			uint32_t instanceLayerCount = 0;
 			result = vkEnumerateInstanceLayerProperties(&instanceLayerCount, nullptr);
 			ASSERT_VULKAN(result);
 
@@ -146,14 +156,16 @@ namespace graphicsEngine {
 				}
 			}
 
-			usedInstanceLayers.push_back("VK_LAYER_LUNARG_standard_validation");
+			//for (auto layer : debug::instanceLayers)
+				//usedInstanceLayers.push_back(layer);
 		}
 
 		void chooseInstanceExtensions(std::function<std::vector<const char*>()> glfwExtensions) {
+			uint32_t instanceExtensionCount = 0;
 			result = vkEnumerateInstanceExtensionProperties(nullptr, &instanceExtensionCount, nullptr);
 			ASSERT_VULKAN(result);
 
-			instanceExtensions.resize(instanceLayerCount);
+			instanceExtensions.resize(instanceExtensionCount);
 
 			result = vkEnumerateInstanceExtensionProperties(nullptr, &instanceExtensionCount, instanceExtensions.data());
 			ASSERT_VULKAN(result);
@@ -167,6 +179,9 @@ namespace graphicsEngine {
 					debug::printProperties(instanceExtensions.data(), instanceExtensionCount);
 				}
 			}
+
+			for (auto extension : debug::instanceExtensions)
+				usedInstanceExtensions.push_back(extension);
 		}
 	}
 }
