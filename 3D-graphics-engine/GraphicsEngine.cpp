@@ -8,7 +8,7 @@ namespace graphicsEngine {
 
 	void start() {
 		vh::InitInfo vkInitInfo;
-		vkInitInfo.usedDebugStartupFlags = vhd::STARTUP_FLAG_BITS_MAX_ENUM /*& ~vhd::STARTUP_INSTANCE_LAYERS_BIT*/ /*& ~vhd::STARTUP_INSTANCE_EXTENSIONS_BIT*/ & ~vhd::STARTUP_QUEUE_FAMILIES_BIT;
+		vkInitInfo.usedDebugStartupFlags = vhd::STARTUP_FLAG_BITS_MAX_ENUM & ~vhd::STARTUP_INSTANCE_LAYERS_BIT & ~vhd::STARTUP_INSTANCE_EXTENSIONS_BIT & ~vhd::STARTUP_QUEUE_FAMILIES_BIT;
 		gh::start(&vkInitInfo);
 		vh::start(vkInitInfo);
 	}

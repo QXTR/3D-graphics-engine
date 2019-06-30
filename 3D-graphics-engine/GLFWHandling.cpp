@@ -13,6 +13,7 @@ namespace graphicsEngine {
 
 		void shutdown() {
 			glfwDestroyWindow(window);
+			glfwTerminate();
 		}
 
 		int loopStep() {
@@ -24,7 +25,7 @@ namespace graphicsEngine {
 			initInfo->window = &window;
 			initInfo->createSurface = [](void* instance, void* window, void* surface) {
 				VkInstance tempInstance = *static_cast<VkInstance*>(instance);
-				VkResult result = glfwCreateWindowSurface(tempInstance, (GLFWwindow*)window, nullptr, (VkSurfaceKHR*)surface);
+				VkResult result = glfwCreateWindowSurface(tempInstance, static_cast<GLFWwindow*>(window), nullptr, static_cast<VkSurfaceKHR*>(surface));
 				ASSERT_VULKAN(result);
 			};
 			initInfo->glfwExtensions = []() {

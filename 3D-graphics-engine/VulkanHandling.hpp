@@ -10,7 +10,7 @@ namespace graphicsEngine {
 		static flags32 usedDebugStartupFlags = 0;
 
 		static VkInstance instance;
-		static VkSurfaceKHR surface;
+		static VkSurfaceKHR surface = VK_NULL_HANDLE;
 		static std::vector<VkPhysicalDevice> physicalDevices;
 		static VkDevice device;
 		static VkQueue queue;
@@ -37,14 +37,14 @@ namespace graphicsEngine {
 		void start(InitInfo);
 		void shutdown();
 
-		void createInstance(std::function<std::vector<const char*>()>);
+		void createInstance(std::function<std::vector<const char*>()>, const void*);
 		void createPhysicalDevices();
 		void createDevice();
 		void createQueue();
 		void createSwapchain();
 
 		void createApplicationInfo();
-		void createInstanceInfo();
+		void createInstanceInfo(const void*);
 
 		void createDeviceQueueCreateInfo();
 		void createDeviceCreateInfo();

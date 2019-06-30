@@ -9,38 +9,41 @@ namespace graphicsEngine {
 			if (usedDebugStartupFlags & debug::STARTUP_ACTIVE_BIT) {
 				debug::printProperties(usedDebugStartupFlags);
 			}
-			createInstance(initInfo.glfwExtensions);
+			void* instanceInfoPNext = nullptr;
 			if (usedDebugStartupFlags & debug::STARTUP_ACTIVE_BIT) {
-				debug::createDebugMessenger();
+				instanceInfoPNext = debug::createDebugMessengerInfo();
 			}
-			initInfo.createSurface(&instance, &window, &surface);
+			createInstance(initInfo.glfwExtensions, instanceInfoPNext);
+			if (usedDebugStartupFlags & debug::STARTUP_ACTIVE_BIT) {
+				debug::createDebugMessenger(instance);
+			}
+			VkSurfaceKHR tempSurface = VK_NULL_HANDLE;
+			initInfo.createSurface(&instance, &window, &tempSurface);
+			surface = tempSurface;
 			createPhysicalDevices();
 			createDevice();
 			createQueue();
-			//createSwapchain();
+			createSwapchain();
 		}
 
 		void shutdown() {
 			vkDeviceWaitIdle(device);
 			vkDestroyDevice(device, nullptr);
 			vkDestroySurfaceKHR(instance, surface, nullptr);
+			if (usedDebugStartupFlags & debug::STARTUP_ACTIVE_BIT) {
+				debug::destroyDebugMessenger(instance);
+			}
 			vkDestroyInstance(instance, nullptr);
 		}
 
-		void createInstance(std::function<std::vector<const char*>()> func) {
+		void createInstance(std::function<std::vector<const char*>()> func, const void* input) {
 			createApplicationInfo();
 			chooseInstanceLayers();
 			chooseInstanceExtensions(func);
-			createInstanceInfo();
+			createInstanceInfo(input);
 			result = vkCreateInstance(&instanceInfo, nullptr, &instance);
 			ASSERT_VULKAN(result);
 		}
-
-		/*void createSurface() {
-			auto window = gh::window;
-			result = glfwCreateWindowSurface(instance, window, nullptr, &surface);
-			ASSERT_VULKAN(result);
-		}*/
 
 		void createPhysicalDevices() {
 			uint32_t physicalDeviceCount = 0;
@@ -92,9 +95,9 @@ namespace graphicsEngine {
 			applicationInfo.apiVersion = VK_API_VERSION_1_1;
 		}
 
-		void createInstanceInfo() {
+		void createInstanceInfo(const void* input) {
 			instanceInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-			instanceInfo.pNext = nullptr;
+			instanceInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*) input;
 			instanceInfo.flags = NULL;
 			instanceInfo.pApplicationInfo = &applicationInfo;
 			instanceInfo.enabledLayerCount = usedInstanceLayers.size();
@@ -156,8 +159,8 @@ namespace graphicsEngine {
 				}
 			}
 
-			//for (auto layer : debug::instanceLayers)
-				//usedInstanceLayers.push_back(layer);
+			for (auto layer : debug::instanceLayers)
+				usedInstanceLayers.push_back(layer);
 		}
 
 		void chooseInstanceExtensions(std::function<std::vector<const char*>()> glfwExtensions) {

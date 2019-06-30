@@ -19,10 +19,19 @@ namespace graphicsEngine {
 			};
 
 			static flags32 usedDebugStartupFlags;
+			static VkResult result;
 
 			static VkDebugUtilsMessengerEXT debugMessenger;
 
-			static std::vector<const char*> instanceLayers = { "VK_LAYER_LUNARG_standard_validation", "VK_LAYER_KHRONOS_validation" };
+			static VkDebugUtilsMessengerCreateInfoEXT debugMessengerInfo;
+
+			static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
+				VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+				VkDebugUtilsMessageTypeFlagsEXT messageType,
+				const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
+				void* pUserData);
+
+			static std::vector<const char*> instanceLayers = { "VK_LAYER_KHRONOS_validation" };
 			static std::vector<const char*> instanceExtensions = { VK_EXT_DEBUG_UTILS_EXTENSION_NAME };
 
 			void printProperties(flags32);
@@ -37,15 +46,10 @@ namespace graphicsEngine {
 			void printProperties(VkExtensionProperties*, uint32_t);
 			void printProperties(VkSurfaceCapabilitiesKHR*);
 
-			void createDebugMessenger();
+			void createDebugMessenger(VkInstance);
+			void destroyDebugMessenger(VkInstance instance);
 
-			void createDebugMessengerInfo();
-
-			static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
-				VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-				VkDebugUtilsMessageTypeFlagsEXT messageType,
-				const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
-				void* pUserData);
+			void* createDebugMessengerInfo();
 		}
 	}
 }

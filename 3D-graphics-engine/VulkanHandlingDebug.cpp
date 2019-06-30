@@ -25,7 +25,7 @@ namespace graphicsEngine {
 
 				VkPhysicalDeviceFeatures features;
 				vkGetPhysicalDeviceFeatures(input, &features);
-				std::cout << "geometryShader: " << features.geometryShader << std::endl;
+				std::cout << "geometryShader:          " << features.geometryShader << std::endl;
 
 				VkPhysicalDeviceMemoryProperties memorieProperties;
 				vkGetPhysicalDeviceMemoryProperties(input, &memorieProperties);
@@ -117,18 +117,24 @@ namespace graphicsEngine {
 				std::cout << "supportedUsageFlags:		 " << input[0].supportedUsageFlags	    << std::endl;
 			}
 
-			void createDebugMessenger() {
-				createDebugMessengerInfo();
-
+			void createDebugMessenger(VkInstance instance) {
+				auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
+				result = func(instance, &debugMessengerInfo, nullptr, &debugMessenger);
+				ASSERT_VULKAN(result);
 			}
 
-			void createDebugMessengerInfo() {
-				VkDebugUtilsMessengerCreateInfoEXT createInfo = {};
-				createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
-				createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
-				createInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
-				createInfo.pfnUserCallback = debugCallback;
-				createInfo.pUserData = nullptr;
+			void destroyDebugMessenger(VkInstance instance) {
+				auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
+				func(instance, debugMessenger, nullptr);
+			}
+
+			void* createDebugMessengerInfo() {
+				debugMessengerInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+				debugMessengerInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT /*| VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT*/ | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+				debugMessengerInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+				debugMessengerInfo.pfnUserCallback = debugCallback;
+				debugMessengerInfo.pUserData = nullptr;
+				return &debugMessengerInfo;
 			}
 			
 			static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
