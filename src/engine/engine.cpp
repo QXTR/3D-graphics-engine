@@ -1,11 +1,16 @@
 #include "engine.hpp"
+#include <iostream>
 
 namespace engine {
-	bool start() {
-
+	void start() {
+		std::cout << "start" << std::endl;
+		glfw::start();
+		vulkan::start();
 	}
 
-	bool shutdown() {
-		
+	void shutdown() {
+		std::cout << "shutdown" << std::endl;
+		vulkan::shutdown();
+		glfw::shutdown();
 	}
 }

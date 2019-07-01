@@ -21,7 +21,13 @@
     <ClCompile Include="engine\engine.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="engine\Vulkan\vulkan.cpp">
+    <ClCompile Include="engine\vulkan\vulkan.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="engine\vulkan\debug\debug.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="engine\glfw\glfw.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -29,7 +35,13 @@
     <ClInclude Include="engine\engine.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="engine\Vulkan\vulkan.hpp">
+    <ClInclude Include="engine\vulkan\vulkan.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\vulkan\debug\debug.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\glfw\glfw.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

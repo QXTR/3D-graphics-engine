@@ -1,7 +1,8 @@
 #pragma once
-#include "Vulkan/vulkan.hpp"
+#include "vulkan/vulkan.hpp"
+#include "glfw/glfw.hpp"
 
 namespace engine {
-	bool start();
-	bool shutdown();
+	void start();
+	void shutdown();
 }

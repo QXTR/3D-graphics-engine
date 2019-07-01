@@ -89,7 +89,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>C:\VulkanSDK\1.1.108.0\Include;C:\glfw-3.3.bin.WIN32\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
@@ -124,7 +124,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
@@ -156,11 +156,15 @@
   <ItemGroup>
     <ClCompile Include="3D-graphics-engine.cpp" />
     <ClCompile Include="engine\engine.cpp" />
-    <ClCompile Include="engine\Vulkan\vulkan.cpp" />
+    <ClCompile Include="engine\glfw\glfw.cpp" />
+    <ClCompile Include="engine\vulkan\debug\debug.cpp" />
+    <ClCompile Include="engine\vulkan\vulkan.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="engine\engine.hpp" />
-    <ClInclude Include="engine\Vulkan\vulkan.hpp" />
+    <ClInclude Include="engine\glfw\glfw.hpp" />
+    <ClInclude Include="engine\vulkan\debug\debug.hpp" />
+    <ClInclude Include="engine\vulkan\vulkan.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

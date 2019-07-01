@@ -4,4 +4,5 @@ int main()
 {
 	engine::start();
 	engine::shutdown();
+	return 0;
 }
