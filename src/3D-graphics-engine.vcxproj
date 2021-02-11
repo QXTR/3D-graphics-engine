@@ -154,17 +154,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="3D-graphics-engine.cpp" />
-    <ClCompile Include="engine\engine.cpp" />
-    <ClCompile Include="engine\glfw\glfw.cpp" />
-    <ClCompile Include="engine\vulkan\debug\debug.cpp" />
-    <ClCompile Include="engine\vulkan\vulkan.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="source\azu_engine.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="engine\engine.hpp" />
-    <ClInclude Include="engine\glfw\glfw.hpp" />
-    <ClInclude Include="engine\vulkan\debug\debug.hpp" />
-    <ClInclude Include="engine\vulkan\vulkan.hpp" />
+    <ClInclude Include="source\azu_engine.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
