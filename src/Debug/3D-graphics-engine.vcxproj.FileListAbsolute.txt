@@ -1,0 +1,2 @@
+C:\Users\Maxim\source\repos\3D-graphics-engine\src\Debug\3D-graphics-engine.exe
+C:\Users\Maxim\source\repos\3D-graphics-engine\src\Debug\3D-graphics-engine.pdb

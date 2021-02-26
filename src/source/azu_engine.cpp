@@ -60,9 +60,6 @@ namespace azu_engine {
 	}
 
 	void GraphicsEngine::createSurface() {
-		VkResult result;
-		result = glfwCreateWindowSurface(instance, window, nullptr, &surface);
-		ASSERT_VULKAN;
 	}
 
 	void GraphicsEngine::createPhysicalDevices() {
